@@ -7,6 +7,7 @@ import axios from "axios";
 const md5 = require("md5");
 
 export const Tablesheet = () => {
+  // Рассматривал вариант сделать с редаксом, но потратил бы больше времени
   const [search, setSearch] = useState<string>("");
   const [inputValue, setInputValue] = useState<number | string>("");
   const [offset, setOffset] = useState<number>(0);
@@ -21,17 +22,17 @@ export const Tablesheet = () => {
     "X-Auth": authString,
     "Content-Type": "application/json",
   };
-  // Рассматривал вариант сделать с редаксом, но потратил бы больше времени
-  // const nextPage = () => {
-  //   setPageNumber((prev): any => {
-  //     setPageNumber(prev + 1);
-  //   });
-  // };
-  // const prevPage = () => {
-  //   setPageNumber((prev): any => {
-  //     setPageNumber(prev - 1);
-  //   });
-  // };
+  const nextPage = (): void => {
+    setOffset((prev: number) => prev + 50);
+  };
+  const prevPage = (): void => {
+    if (offset < 50) {
+      return;
+    } else {
+      setOffset((prev: number) => prev - 50);
+    }
+  };
+
   const getIds = async () => {
     try {
       const data = {
@@ -73,7 +74,7 @@ export const Tablesheet = () => {
   };
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [offset]);
   return (
     <div className={css.root}>
       <table className={css.table}>
@@ -100,14 +101,14 @@ export const Tablesheet = () => {
       </table>
       <div className={css.button_wrapper}>
         <Button
-          disabled={pageNumber === 1}
-          // onClick={() => prevPage()}
+          disabled={offset < 50}
+          onClick={() => prevPage()}
           className={css.button}
           name={"Previous Page"}
         />
         <Button
-          // onClick={() => nextPage()}
-          disabled={pageNumber === 14}
+          onClick={() => nextPage()}
+          disabled={offset > 8000}
           className={css.button}
           name={"Next Page"}
         />
