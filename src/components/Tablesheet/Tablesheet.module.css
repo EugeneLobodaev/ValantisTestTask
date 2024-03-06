@@ -1,0 +1,43 @@
+.root {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.table {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.table_header {
+    border: 1px solid black;
+
+}
+
+.table_row {
+    border: 1px solid black;
+
+}
+
+.button_wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.page {
+    border: solid black 0.5px;
+}
+
+.current_page {
+    background-color: rgba(128, 128, 128, 0.753);
+    scale: 1.2;
+
+}
+
+.button {
+    width: 100px;
+    height: 35px;
+}
