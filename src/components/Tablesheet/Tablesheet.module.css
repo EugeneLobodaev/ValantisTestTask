@@ -1,24 +1,30 @@
+html {
+    background-color: rgba(0, 0, 0, 0.79);
+}
+
 .root {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     gap: 10px;
+    color: rgba(255, 255, 255, 0.841);
 }
 
-
 .table {
-    border: 1px solid black;
+    border: 1px solid white;
     border-collapse: collapse;
 }
 
 .table_header {
-    border: 1px solid black;
+    border: 1px solid white;
+    font-size: 25px;
 
 }
 
 .table_row {
-    border: 1px solid black;
+    border: 1px solid white;
+    padding: 5px;
 
 }
 
@@ -28,7 +34,7 @@
 }
 
 .page {
-    border: solid black 0.5px;
+    border: solid white 0.5px;
 }
 
 .current_page {
@@ -40,4 +46,20 @@
 .button {
     width: 100px;
     height: 35px;
+    border:  0px;
+    transition: 0.4s;
+    background-color: rgba(255, 255, 255, 0.799);
+}
+.button:hover {
+    transition: 0.4s;
+    background-color: rgba(255, 255, 255, 0.500);
+}
+.button:disabled {
+    transition: 0.4s;
+    background-color: rgb(91, 91, 91);
+    color: black;
+}
+.fallback {
+    font-size: 26px;
+    margin: 50px;
 }

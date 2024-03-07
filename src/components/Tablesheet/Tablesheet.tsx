@@ -5,23 +5,25 @@ import { Button } from "../Button";
 import { Input } from "../Input/Input";
 import axios from "axios";
 const md5 = require("md5");
+const tableLimit = 50;
+const url = "http://api.valantis.store:40000";
+const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+const password = "Valantis";
+const authString = md5(password + "_" + timestamp);
+const headers = {
+  "X-Auth": authString,
+  "Content-Type": "application/json",
+};
 
 export const Tablesheet = () => {
   // Рассматривал вариант сделать с редаксом, но потратил бы больше времени
   const [search, setSearch] = useState<string>("");
   const [inputValue, setInputValue] = useState<number | string>("");
-  const [offset, setOffset] = useState<number>(0);
+  const [offset, setOffset] = useState<number>(1);
   const [id, setId] = useState<any[]>();
+  const [fields, setFields] = useState<any[]>()
   const [items, setItems] = useState<fetchParams[]>();
-  const tableLimit = 50;
-  const url = "http://api.valantis.store:40000";
-  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const password = "Valantis";
-  const authString = md5(password + "_" + timestamp);
-  const headers = {
-    "X-Auth": authString,
-    "Content-Type": "application/json",
-  };
+
   const nextPage = (): void => {
     setOffset((prev: number) => prev + 50);
   };
@@ -33,17 +35,29 @@ export const Tablesheet = () => {
     }
   };
 
+ const getFields = async() => {
+  try {
+    const data = {
+      action: "get_fields"
+    }
+    const response = await axios.post(url, data, {headers})
+  }
+  catch (error ) {
+    console.log("ошиьбка получения полей:", error)
+  }
+ }
   const getIds = async () => {
     try {
       const data = {
         action: "get_ids",
         params: { offset: offset, limit: tableLimit },
       };
-      const response = await axios.post(`${url}`, data, { headers });
-      console.log("res id", response.data.result);
-      setId(response.data.result);
+      const response = await axios.post(`${url}`, data, { headers })
+    setId(response.data.result);
+      console.log("ответ ИД", response.data.result)
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("ошибка запроса ИД:", error);
+      getIds()
     }
   };
   const getItems = async () => {
@@ -51,9 +65,7 @@ export const Tablesheet = () => {
       const data = {
         action: "get_items",
         params: {
-          ids: id,
-          limit: tableLimit,
-          offset: offset,
+          ids: id
         },
       };
       const response = await axios.post(`${url}`, data, { headers });
@@ -61,43 +73,47 @@ export const Tablesheet = () => {
       setItems(response.data.result);
       console.log("items set:", items);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("ошибка запроса товара:", error);
     }
   };
-  const fetchData = async () => {
-    try {
-      await getIds();
-      await getItems();
-    } catch (error) {
-      console.log(error);
+  const getFilteredIds = async () => {
+    const data = {
+      action : "filter",
+      params : `product: ${inputValue}`,
     }
-  };
+    const response = await axios.post(url, data, {headers})
+    console.log("фильтрованные айди",response.data.result)
+    setId(response.data.result)
+  }
   useEffect(() => {
-    fetchData();
+     getIds();
   }, [offset]);
-  return (
+
+  useEffect(() => {
+    getItems()
+  },[id])
+  if (!items) {
+    return (
+      <div className={css.root}>
+        <span className={css.fallback}>Loading...</span>
+      </div>
+    )}
+    else {
+      return (
     <div className={css.root}>
       <table className={css.table}>
-        <tr>
           <th className={css.table_header}>id</th>
           <th className={css.table_header}>name</th>
           <th className={css.table_header}>brand</th>
           <th className={css.table_header}>price</th>
-        </tr>
-        {items && items.length > 0 ? (
-          items.map((el) => (
-            <tr className={css.table_header} key={el.id}>
-              <td className={css.table_header}>{el.id}</td>
-              <td className={css.table_header}>{el.product}</td>
-              <td className={css.table_header}>{el.brand}</td>
-              <td className={css.table_header}>{el.price}</td>
+          {items.map((el) => (
+            <tr className={css.table_row} key={el.id}>
+              <td className={css.table_row}>{el.id}</td>
+              <td className={css.table_row}>{el.product}</td>
+              <td className={css.table_row}>{el.brand}</td>
+              <td className={css.table_row}>{el.price}</td>
             </tr>
-          ))
-        ) : (
-          <tr>
-            <td>Loading...</td>
-          </tr>
-        )}
+          ))}
       </table>
       <div className={css.button_wrapper}>
         <Button
@@ -121,5 +137,6 @@ export const Tablesheet = () => {
         defaultValue={inputValue}
       />
     </div>
-  );
-};
+      )
+    }
+  }
