@@ -46,20 +46,32 @@ html {
 .button {
     width: 100px;
     height: 35px;
-    border:  0px;
+    border: 0px;
     transition: 0.4s;
     background-color: rgba(255, 255, 255, 0.799);
 }
+
 .button:hover {
     transition: 0.4s;
     background-color: rgba(255, 255, 255, 0.500);
 }
+
 .button:disabled {
     transition: 0.4s;
     background-color: rgb(91, 91, 91);
     color: black;
 }
+
 .fallback {
     font-size: 26px;
     margin: 50px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
 }
