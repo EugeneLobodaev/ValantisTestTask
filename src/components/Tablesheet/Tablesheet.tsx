@@ -4,6 +4,7 @@ import { fetchParams } from "../../types/tableSheetTypes";
 import { Button } from "../Button";
 import { Input } from "../Input/Input";
 import axios from "axios";
+
 const md5 = require("md5");
 const tableLimit = 50;
 const url = "http://api.valantis.store:40000";
@@ -50,11 +51,16 @@ export const Tablesheet = () => {
     try {
       const data = {
         action: "get_ids",
-        params: { offset: offset, limit: tableLimit },
-      };
+        params: { offset: offset, limit: tableLimit
+      }}
       const response = await axios.post(`${url}`, data, { headers })
-    setId(response.data.result);
-      console.log("ответ ИД", response.data.result)
+      console.log(response.data.result)
+      //убираем дубликаты
+      const createSetResponse = new Set<string>(response.data.result)
+      // @ts-ignore
+      const clearedResponse = [...createSetResponse]
+      console.log(clearedResponse)
+    setId(clearedResponse);
     } catch (error) {
       console.error("ошибка запроса ИД:", error);
       getIds()
@@ -69,22 +75,30 @@ export const Tablesheet = () => {
         },
       };
       const response = await axios.post(`${url}`, data, { headers });
-      console.log("response items", response.data.result, "setting items");
       setItems(response.data.result);
-      console.log("items set:", items);
     } catch (error) {
       console.error("ошибка запроса товара:", error);
     }
   };
-  const getFilteredIds = async () => {
+    const getFilteredIds = async () => {
     const data = {
       action : "filter",
-      params : `product: ${inputValue}`,
+      params : {
+      product: inputValue,
+      limit: tableLimit, // этот параметр не работает в фильтрации, при запросе приходит огромный массив
     }
+    }
+    try{   
     const response = await axios.post(url, data, {headers})
-    console.log("фильтрованные айди",response.data.result)
     setId(response.data.result)
+    setInputValue("")
   }
+catch(error) {
+  console.log("ошибка запроса:",error)
+  getFields()
+}
+  }
+  
   useEffect(() => {
      getIds();
   }, [offset]);
@@ -129,13 +143,25 @@ export const Tablesheet = () => {
           name={"Next Page"}
         />
       </div>
-      <Input
+      <form action="submit" onSubmit={(e) => {
+        e.preventDefault();
+        getFilteredIds();
+        
+      }}>
+        <Input
         type={"search"}
         name={"search"}
-        // onChange={(e) => setSearchValue(e.target.value)}
+        onChange={(e) => setInputValue(e.currentTarget.value)}
         placeholder={"search"}
-        defaultValue={inputValue}
+        value={inputValue}
       />
+      </form>
+      <Button onClick={() => getFilteredIds()} className={css.button} name="Search"/>
+      <Button onClick={() => {
+        setOffset(0)
+        getIds()
+        setInputValue("")}} 
+        name="Reset" className={css.button}/>
     </div>
       )
     }
