@@ -40,16 +40,6 @@ export const Tablesheet = () => {
   // это можно сделать на клиенте, но:
   // 1. загрузка большого объема данных (массив из 8000 элементов)
   //2. работа с таким массивом(обрезание и создание переменных не мутируя исходный массив) очень увесистая.
-  const getFields = async () => {
-    try {
-      const data = {
-        action: "get_fields",
-      };
-      const response = await axios.post(url, data, { headers });
-    } catch (error) {
-      console.log("ошиьбка получения полей:", error);
-    }
-  };
   const getIds = async () => {
     setLoading(true);
     try {
@@ -112,7 +102,6 @@ export const Tablesheet = () => {
       setId(response.data.result);
     } catch (error) {
       console.log("ошибка запроса:", error);
-      getFields();
     } finally {
       setLoading(false);
     }
@@ -134,7 +123,6 @@ export const Tablesheet = () => {
       setId(response.data.result);
     } catch (error) {
       console.log("ошибка запроса:", error);
-      getFields();
     } finally {
       setLoading(false);
     }
@@ -153,7 +141,7 @@ export const Tablesheet = () => {
       setId(response.data.result);
     } catch (error) {
       console.log("ошибка запроса:", error);
-      getFields();
+      getFilteredPrice();
     } finally {
       setLoading(false);
     }
