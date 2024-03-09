@@ -259,18 +259,22 @@ export const Tablesheet = () => {
           className={css.button}
         />
         <table className={css.table}>
-          <th className={css.table_header}>id</th>
-          <th className={css.table_header}>name</th>
-          <th className={css.table_header}>brand</th>
-          <th className={css.table_header}>price</th>
-          {items.map((el) => (
-            <tr className={css.table_row} key={el.id}>
-              <td className={css.table_row}>{el.id}</td>
-              <td className={css.table_row}>{el.product}</td>
-              <td className={css.table_row}>{el.brand}</td>
-              <td className={css.table_row}>{el.price}</td>
-            </tr>
-          ))}
+          <thead>
+            <th className={css.table_header}>id</th>
+            <th className={css.table_header}>name</th>
+            <th className={css.table_header}>brand</th>
+            <th className={css.table_header}>price</th>
+          </thead>
+          <tbody>
+            {items.map((el) => (
+              <tr className={css.table_row} key={el.id}>
+                <td className={css.table_row}>{el.id}</td>
+                <td className={css.table_row}>{el.product}</td>
+                <td className={css.table_row}>{el.brand}</td>
+                <td className={css.table_row}>{el.price}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     );
