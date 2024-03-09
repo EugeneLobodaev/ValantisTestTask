@@ -7,7 +7,7 @@ import axios from "axios";
 
 const md5 = require("md5");
 const TABLE_LIMIT = 50;
-const url = "http://api.valantis.store:40000";
+const url = "https://api.valantis.store:41000/";
 const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 const password = "Valantis";
 const authString = md5(password + "_" + timestamp);
