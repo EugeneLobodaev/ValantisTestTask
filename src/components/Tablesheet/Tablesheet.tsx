@@ -14,6 +14,7 @@ const authString = md5(password + "_" + timestamp);
 const headers = {
   "X-Auth": authString,
   "Content-Type": "application/json",
+  https: "on",
 };
 
 export const Tablesheet = () => {
