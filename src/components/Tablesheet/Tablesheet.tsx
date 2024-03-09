@@ -36,7 +36,10 @@ export const Tablesheet = () => {
       setOffset((prev: number) => prev - TABLE_LIMIT);
     }
   };
-
+  //перехода на конкретную страницу нет т.к нет такого функционала у API
+  // это можно сделать на клиенте, но:
+  // 1. загрузка большого объема данных (массив из 8000 элементов)
+  //2. работа с таким массивом(обрезание и создание переменных не мутируя исходный массив) очень увесистая.
   const getFields = async () => {
     try {
       const data = {
@@ -92,6 +95,9 @@ export const Tablesheet = () => {
       setLoading(false);
     }
   };
+  // все фильтры в один запрос добавить не получилось т.к апи не поддерживает несколько параметров в фильтре (насколько я понял, у меня не получилось так сделать)
+  // это можно сделать если получать все 3 массива Id из 3 фильтров и путем перебора и совпадения дубликатов добавлять их в еще один массив и передавать
+  // его в getIds для получения Items с учетом всем 3ех фильтров
   const getFilteredProducts = async () => {
     const data = {
       action: "filter",
@@ -111,6 +117,9 @@ export const Tablesheet = () => {
       setLoading(false);
     }
   };
+  //поиск по брендам чувствителен к регистру, т.к каждый бренд может содержать непредсказуемый регистр символов в любом из слов, сделать upper/lowercase функцию будет проблематично
+  // в идеале ( по моему скоромному мнению), названия должны приводиться к нижнему регистру на стороне сервера и на клиентской стороне для удобства поиска в таких случаях
+  // т.е сейчас для поиска по брендам необходимо точно вводить название бренда ( Cartier, Van Cleef & Alpert и тд)
   const getFilteredBrand = async () => {
     const data = {
       action: "filter",
@@ -166,20 +175,76 @@ export const Tablesheet = () => {
   } else {
     return (
       <div className={css.root}>
-        <table className={css.table}>
-          <th className={css.table_header}>id</th>
-          <th className={css.table_header}>name</th>
-          <th className={css.table_header}>brand</th>
-          <th className={css.table_header}>price</th>
-          {items.map((el) => (
-            <tr className={css.table_row} key={el.id}>
-              <td className={css.table_row}>{el.id}</td>
-              <td className={css.table_row}>{el.product}</td>
-              <td className={css.table_row}>{el.brand}</td>
-              <td className={css.table_row}>{el.price}</td>
-            </tr>
-          ))}
-        </table>
+        <div className={css.form_wrapper}>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredProducts();
+              setNameValue("");
+            }}
+          >
+            <Input
+              type={"search"}
+              name={"name"}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.currentTarget.value)}
+              placeholder={"enter name"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredProducts()}
+              className={css.button}
+              name="искать по названию"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredBrand();
+              setBrandValue("");
+            }}
+          >
+            <Input
+              type={"text"}
+              name={"brand"}
+              value={brandValue}
+              onChange={(e) => {
+                setBrandValue(e.currentTarget.value);
+              }}
+              placeholder={"enter brand"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredBrand()}
+              className={css.button}
+              name="искать по бренду"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredPrice();
+              setPriceValue("");
+            }}
+          >
+            <Input
+              type={"number"}
+              name={"price"}
+              value={priceValue}
+              onChange={(e) => setPriceValue(Number(e.currentTarget.value))}
+              placeholder={"enter price"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredPrice()}
+              className={css.button}
+              name="искать по цене"
+            />
+          </form>
+        </div>
         <div className={css.button_wrapper}>
           <Button
             disabled={offset < 50 || loading}
@@ -194,85 +259,6 @@ export const Tablesheet = () => {
             name={"Next Page"}
           />
         </div>
-        <form
-          className={css.form}
-          onSubmit={(e) => {
-            e.preventDefault();
-            getFilteredProducts();
-            setNameValue("");
-          }}
-        >
-          <Input
-            type={"search"}
-            name={"name"}
-            value={nameValue}
-            onChange={(e) => {
-              const inputText = e.currentTarget.value;
-              const capitalizedText =
-                inputText.charAt(0).toUpperCase() +
-                inputText.slice(1).toLowerCase();
-              setNameValue(capitalizedText);
-            }}
-            placeholder={"enter name"}
-          />
-          <Button
-            type="submit"
-            onClick={() => getFilteredProducts()}
-            className={css.button}
-            name="искать по названию"
-          />
-        </form>
-        <form
-          className={css.form}
-          onSubmit={(e) => {
-            e.preventDefault();
-            getFilteredBrand();
-            setBrandValue("");
-          }}
-        >
-          <Input
-            type={"text"}
-            name={"brand"}
-            value={brandValue}
-            onChange={(e) => {
-              const inputText = e.currentTarget.value;
-              const capitalizedText =
-                inputText.charAt(0).toUpperCase() +
-                inputText.slice(1).toLowerCase();
-              setBrandValue(capitalizedText);
-            }}
-            placeholder={"enter brand"}
-          />
-          <Button
-            type="submit"
-            onClick={() => getFilteredBrand()}
-            className={css.button}
-            name="искать по бренду"
-          />
-        </form>
-
-        <form
-          className={css.form}
-          onSubmit={(e) => {
-            e.preventDefault();
-            getFilteredPrice();
-            setPriceValue("");
-          }}
-        >
-          <Input
-            type={"number"}
-            name={"price"}
-            value={priceValue}
-            onChange={(e) => setPriceValue(e.currentTarget.value)}
-            placeholder={"enter price"}
-          />
-          <Button
-            type="submit"
-            onClick={() => getFilteredPrice()}
-            className={css.button}
-            name="искать по цене"
-          />
-        </form>
         <Button
           onClick={() => {
             setOffset(0);
@@ -284,6 +270,20 @@ export const Tablesheet = () => {
           name="Reset"
           className={css.button}
         />
+        <table className={css.table}>
+          <th className={css.table_header}>id</th>
+          <th className={css.table_header}>name</th>
+          <th className={css.table_header}>brand</th>
+          <th className={css.table_header}>price</th>
+          {items.map((el) => (
+            <tr className={css.table_row} key={el.id}>
+              <td className={css.table_row}>{el.id}</td>
+              <td className={css.table_row}>{el.product}</td>
+              <td className={css.table_row}>{el.brand}</td>
+              <td className={css.table_row}>{el.price}</td>
+            </tr>
+          ))}
+        </table>
       </div>
     );
   }
