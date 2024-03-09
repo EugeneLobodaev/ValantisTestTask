@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import css from "./Tablesheet.module.css";
 import { fetchParams } from "../../types/tableSheetTypes";
 import { Button } from "../Button";
@@ -40,7 +40,7 @@ export const Tablesheet = () => {
   // это можно сделать на клиенте, но:
   // 1. загрузка большого объема данных (массив из 8000 элементов)
   //2. работа с таким массивом(обрезание и создание переменных не мутируя исходный массив) очень увесистая.
-  const getIds = async () => {
+  const getIds = useCallback(async () => {
     setLoading(true);
     try {
       const data = {
@@ -65,8 +65,8 @@ export const Tablesheet = () => {
     } finally {
       setLoading(false);
     }
-  };
-  const getItems = async () => {
+  }, [offset]);
+  const getItems = useCallback(async () => {
     setLoading(true);
     try {
       const data = {
@@ -84,7 +84,7 @@ export const Tablesheet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
   // все фильтры в один запрос добавить не получилось т.к апи не поддерживает несколько параметров в фильтре (насколько я понял, у меня не получилось так сделать)
   // это можно сделать если получать все 3 массива Id из 3 фильтров и путем перебора и совпадения дубликатов добавлять их в еще один массив и передавать
   // его в getIds для получения Items с учетом всем 3ех фильтров
@@ -149,11 +149,11 @@ export const Tablesheet = () => {
 
   useEffect(() => {
     getIds();
-  }, [offset]);
+  }, [getIds, offset]);
 
   useEffect(() => {
     getItems();
-  }, [id]);
+  }, [getItems, id]);
   if (!items) {
     return (
       <div className={css.root}>
