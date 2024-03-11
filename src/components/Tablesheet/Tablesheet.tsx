@@ -22,9 +22,9 @@ export const Tablesheet = () => {
   const [nameValue, setNameValue] = useState<string>("");
   const [brandValue, setBrandValue] = useState<string>("");
   const [priceValue, setPriceValue] = useState<any>(null);
-  const [offset, setOffset] = useState<number>(1);
+  const [offset, setOffset] = useState<number>(0);
   const [id, setId] = useState<string[]>();
-  const [items, setItems] = useState<fetchParams[]>();
+  const [items, setItems] = useState<fetchParams[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const nextPage = (): void => {
@@ -48,21 +48,10 @@ export const Tablesheet = () => {
         action: "get_ids",
         params: { offset: offset, limit: TABLE_LIMIT },
       };
-      const response = await axios.post(`${url}`, data, { headers });
-      //убираем дубликаты
-      const createSetResponse = new Set<string>(response.data.result);
-      //@ts-ignore
-      const clearedResponse = [...createSetResponse];
-      console.log(clearedResponse);
-      setId(clearedResponse);
+      const response = await axios.post(url, data, { headers });
+      setId(response.data.result);
     } catch (error: any) {
-      console.error("ошибка запроса ИД:", error);
-      if (error.response && error.response.status === 400) {
-        console.error("Ошибка получения ИД:", error);
-        getIds();
-      } else {
-        console.error("Не удалось получить ИД. Ошибка:", error);
-      }
+      console.error("ошибка запроса ИД:", error.message);
     } finally {
       setLoading(false);
     }
@@ -76,12 +65,17 @@ export const Tablesheet = () => {
           ids: id,
         },
       };
-      const response = await axios.post(`${url}`, data, {
+      const response = await axios.post(url, data, {
         headers,
       });
-      setItems(response.data.result);
-    } catch (error) {
-      console.error("ошибка запроса товара:", error);
+      //чистим массив с товарами
+      const filteredItems = response.data.result.filter(
+        (item: { id: string }, index: number, self: any[]) =>
+          index === self.findIndex((el) => el.id === item.id)
+      );
+      setItems(filteredItems);
+    } catch (error: any) {
+      console.error("ошибка запроса Товара:", error);
     } finally {
       setLoading(false);
     }
@@ -155,10 +149,209 @@ export const Tablesheet = () => {
   useEffect(() => {
     getItems();
   }, [getItems, id]);
-  if (!items) {
+  if (loading && items) {
     return (
       <div className={css.root}>
-        <span className={css.fallback}>Loading...</span>
+        <div className={css.form_wrapper}>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredProducts();
+              setNameValue("");
+            }}
+          >
+            <Input
+              type={"search"}
+              name={"name"}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.currentTarget.value)}
+              placeholder={"enter name"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredProducts()}
+              className={css.button}
+              name="искать по названию"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredBrand();
+              setBrandValue("");
+            }}
+          >
+            <Input
+              type={"text"}
+              name={"brand"}
+              value={brandValue}
+              onChange={(e) => {
+                setBrandValue(e.currentTarget.value);
+              }}
+              placeholder={"enter brand"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredBrand()}
+              className={css.button}
+              name="искать по бренду"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredPrice();
+              setPriceValue("");
+            }}
+          >
+            <Input
+              type={"number"}
+              name={"price"}
+              value={priceValue}
+              onChange={(e) => setPriceValue(Number(e.currentTarget.value))}
+              placeholder={"enter price"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredPrice()}
+              className={css.button}
+              name="искать по цене"
+            />
+          </form>
+        </div>
+        <div className={css.button_wrapper}>
+          <Button
+            disabled={offset < 50 || loading}
+            onClick={() => prevPage()}
+            className={css.button}
+            name={"Previous Page"}
+          />
+          <Button
+            onClick={() => nextPage()}
+            disabled={offset > 8000 || loading}
+            className={css.button}
+            name={"Next Page"}
+          />
+        </div>
+        <Button
+          onClick={() => {
+            setNameValue("");
+            setBrandValue("");
+            setPriceValue(null);
+            setItems([]);
+            setOffset(0);
+            getIds();
+          }}
+          name="Reset"
+          className={css.button}
+        />
+        <span className="fallback">Loading...</span>
+      </div>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <div className={css.root}>
+        <div className={css.form_wrapper}>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredProducts();
+              setNameValue("");
+            }}
+          >
+            <Input
+              type={"search"}
+              name={"name"}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.currentTarget.value)}
+              placeholder={"enter name"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredProducts()}
+              className={css.button}
+              name="искать по названию"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredBrand();
+              setBrandValue("");
+            }}
+          >
+            <Input
+              type={"text"}
+              name={"brand"}
+              value={brandValue}
+              onChange={(e) => {
+                setBrandValue(e.currentTarget.value);
+              }}
+              placeholder={"enter brand"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredBrand()}
+              className={css.button}
+              name="искать по бренду"
+            />
+          </form>
+          <form
+            className={css.form}
+            onSubmit={(e) => {
+              e.preventDefault();
+              getFilteredPrice();
+              setPriceValue("");
+            }}
+          >
+            <Input
+              type={"number"}
+              name={"price"}
+              value={priceValue}
+              onChange={(e) => setPriceValue(Number(e.currentTarget.value))}
+              placeholder={"enter price"}
+            />
+            <Button
+              type="submit"
+              onClick={() => getFilteredPrice()}
+              className={css.button}
+              name="искать по цене"
+            />
+          </form>
+        </div>
+        <div className={css.button_wrapper}>
+          <Button
+            disabled={offset < 50 || loading}
+            onClick={() => prevPage()}
+            className={css.button}
+            name={"Previous Page"}
+          />
+          <Button
+            onClick={() => nextPage()}
+            disabled={offset > 8000 || loading}
+            className={css.button}
+            name={"Next Page"}
+          />
+        </div>
+        <Button
+          onClick={() => {
+            setNameValue("");
+            setBrandValue("");
+            setPriceValue(null);
+            setItems([]);
+            setOffset(0);
+            getIds();
+          }}
+          name="Reset"
+          className={css.button}
+        />
+        <span className="fallback">Товара не найдено</span>
       </div>
     );
   } else {
